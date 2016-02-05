@@ -518,6 +518,7 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = addVersionHeader(desc,
 				webResource.getRequestBuilder(), "If-Match");
+		addHostCookie(builder, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -649,6 +650,7 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = makeDocumentResource(
 				makeDocumentParams(uri, categories, transaction, extraParams))
 				.accept(mimetype);
+		addHostCookie(builder, transaction);
 
 		if (extraParams != null && extraParams.containsKey("range"))
 			builder = builder.header("range", extraParams.get("range").get(0));
@@ -935,6 +937,7 @@ public class JerseyServices implements RESTServices {
 		docParams.add("format", metadataFormat);
 
 		WebResource.Builder builder = makeDocumentResource(docParams).getRequestBuilder();
+		addHostCookie(builder, transaction);
 		builder = addVersionHeader(desc, builder, "If-None-Match");
 
 		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
@@ -1276,6 +1279,7 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = webResource.type(
 				(mimetype != null) ? mimetype : MediaType.WILDCARD);
+		addHostCookie(builder, transaction);
 		if (uri != null) {
 			builder = addVersionHeader(desc, builder, "If-Match");
 		}
@@ -1433,6 +1437,7 @@ public class JerseyServices implements RESTServices {
 			makeDocumentParams(uri, categories, transaction, extraParams, true);
 
 		WebResource.Builder builder = makeDocumentResource(docParams).getRequestBuilder();
+		addHostCookie(builder, transaction);
 		if (uri != null) {
 			builder = addVersionHeader(desc, builder, "If-Match");
 		}

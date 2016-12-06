@@ -100,6 +100,10 @@ public class BatchWriteSet {
     this.temporalCollection = temporalCollection;
   }
 
+  public boolean isStopped() {
+    return batcher.isStopped();
+  }
+
   public Runnable getOnSuccess() {
     return onSuccess;
   }

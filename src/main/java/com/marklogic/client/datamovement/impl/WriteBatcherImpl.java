@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -494,11 +495,16 @@ public class WriteBatcherImpl
 
   private void flush(boolean waitForCompletion) {
     requireInitialized();
-    requireNotStopped();
     // drain any docs left in the queue
     List<DocumentToWrite> docs = new ArrayList<>();
     long recordInBatch = batchCounter.getAndSet(0);
     queue.drainTo(docs);
+    if ( isStopped() == true && docs.size() > 0 ) {
+      logger.warn("Job is now stopped, preventing the flush of {} queued docs: {}",
+        docs.size(),
+        docs.stream().map(doc->doc.uri).collect(Collectors.toList()));
+      return;
+    }
     logger.info("flushing {} queued docs", docs.size());
     Iterator<DocumentToWrite> iter = docs.iterator();
     boolean forceNewTransaction = true;
@@ -946,6 +952,11 @@ public class WriteBatcherImpl
 
     @Override
     public void run() {
+      if ( writeSet.isStopped() == true ) {
+        logger.warn("Job is now stopped, preventing the write of docs: {}",
+          writeSet.getWriteSet().stream().map(doc->doc.getUri()).collect(Collectors.toList()));
+        return;
+      }
       try {
         Runnable onBeforeWrite = writeSet.getOnBeforeWrite();
         if ( onBeforeWrite != null ) {
